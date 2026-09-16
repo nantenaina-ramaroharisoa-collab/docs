@@ -1,7 +1,7 @@
 ---
-title: "Authenticate the Agentova Node with Your API Key"
+title: "Authenticate the Agentova Poc Node with Your API Key"
 sidebarTitle: "Authentication"
-description: "Generate your Agentova API key, create a credential in n8n, and connect the Agentova Poc node to your account securely."
+description: "Generate your Agentova API key, create a named credential in n8n, and connect the Agentova Poc node to your account securely using Bearer token auth."
 ---
 
 Every request the Agentova node makes to the Agentova API is authenticated with a personal API key. You generate the key once inside your Agentova account, store it as a named credential in n8n, and then select that credential whenever you add the Agentova node to a workflow. Your key is encrypted at rest by n8n and never exposed in plain text inside your workflow JSON.
@@ -55,7 +55,7 @@ If the credential test fails or your node returns errors at runtime, use the tab
 |---------|-------------|------------|
 | **401 Unauthorized** during credential test | API key is invalid, expired, or copied incorrectly | Double-check the key in your Agentova account and re-paste it into n8n. |
 | **401 Unauthorized** at runtime (key previously worked) | Key may have been revoked or rotated | Regenerate the key in Agentova and update the n8n credential. |
-| **403 Forbidden** | Key does not have the required permissions | Ensure the key has read/write access to Users and Companies in Agentova. |
+| **403 Forbidden** | Key does not have sufficient permissions for the requested resource | Check that your API key is active and has not been restricted in your Agentova account settings. |
 | **Credential test button is greyed out** | n8n version does not support credential testing for this node | Save the credential and test it by running a simple **Get Many** operation in a workflow instead. |
 
 ### Regenerating Your API Key

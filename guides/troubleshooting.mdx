@@ -1,7 +1,7 @@
 ---
-title: "Troubleshoot Common Agentova Node Errors in n8n"
+title: "Troubleshoot Agentova Node Errors in n8n Workflows"
 sidebarTitle: "Troubleshooting"
-description: "Diagnose and fix the most common issues with the Agentova Poc node: authentication failures, missing parameters, and API errors."
+description: "Diagnose and fix the most common errors with the Agentova Poc node: authentication failures, missing parameters, and API rate limits."
 ---
 
 Even well-configured workflows run into problems occasionally. This page covers the errors you're most likely to encounter when using the Agentova Poc node, explains what causes them, and gives you concrete steps to resolve each one. Work through the relevant accordion section below, then re-run your workflow to confirm the fix.
@@ -48,10 +48,10 @@ Even well-configured workflows run into problems occasionally. This page covers 
     If you're running n8n in Docker, restart the container. If you're using n8n Cloud, contact your workspace admin to verify community node permissions are enabled.
   </Accordion>
 
-  <Accordion title='"User ID is required" error on Get or Update operations'>
+  <Accordion title='"User ID is required" error on the Get User operation'>
     **What you see:** The node throws a validation error: `User ID is required` (or similar), preventing execution.
 
-    **Why it happens:** The **User ID** field on the User **Get** (or **Update**) operation is empty. This field is mandatory — the API cannot fetch a specific user without knowing which one to look up.
+    **Why it happens:** The **User ID** field on the User **Get** operation is empty. This field is mandatory — the API cannot fetch a specific user without knowing which one to look up.
 
     **How to fix it:**
 

@@ -1,10 +1,10 @@
 ---
-title: "Agentova for n8n: Automate with the Agentova API"
+title: "Agentova Community Node for n8n: Overview and Capabilities"
 sidebarTitle: "Introduction"
-description: "Learn what the Agentova for n8n community node does, which resources it supports, and how it fits into your automation workflows."
+description: "Learn what the Agentova for n8n community node does, which resources and operations it supports, and how it fits into your automation workflows."
 ---
 
-The Agentova for n8n community node brings the Agentova API directly into your n8n workflows, letting you create, read, update, and delete your Agentova data without writing a single line of code. Whether you are syncing CRM records, orchestrating multi-step automations, or wiring Agentova into an AI-powered pipeline, this node gives you a first-class integration that feels native inside n8n.
+The Agentova for n8n community node brings the Agentova API directly into your n8n workflows, letting you read and create your Agentova data without writing a single line of code. Whether you are syncing user records, pulling company data into downstream tools, or wiring Agentova into an AI-powered pipeline, this node gives you a first-class integration that feels native inside n8n.
 
 ## What Problem It Solves
 
@@ -16,21 +16,21 @@ The node currently exposes two core resources from the Agentova API.
 
 <CardGroup cols={2}>
   <Card title="Users" icon="user">
-    Create, retrieve, update, and delete individual user records in your Agentova account. Perfect for onboarding flows, profile sync, and user lifecycle automation.
+    Retrieve a list of users, look up a single user by ID, or create a new user record in your Agentova account. Perfect for onboarding flows, profile sync, and user lookup automation.
   </Card>
   <Card title="Companies" icon="building">
-    Create, retrieve, update, and delete company records. Use this to keep your Agentova company data in sync with your CRM, data warehouse, or any other system in your stack.
+    Retrieve a list of company records from your Agentova account. Use this to pull company data into your CRM, data warehouse, or any other system in your stack.
   </Card>
 </CardGroup>
 
 ## Available Operations
 
-Each resource supports a full set of CRUD operations so you can model virtually any data workflow.
+The node exposes the following operations for each resource.
 
 | Resource | Operations |
-|----------|-----------|
-| **Users** | Create, Get, Get Many, Update, Delete |
-| **Companies** | Create, Get, Get Many, Update, Delete |
+|----------|------------|
+| **Users** | Get Many, Get, Create |
+| **Companies** | Get Many |
 
 ## Two Ways to Use the Node
 
@@ -38,7 +38,7 @@ The Agentova node is designed to slot into your workflows in two distinct modes,
 
 <CardGroup cols={2}>
   <Card title="Standard Node" icon="circle-nodes">
-    Drag the node into any workflow and wire it between triggers and other actions. Ideal for straightforward create-or-update pipelines where you know exactly which operation to run at build time.
+    Drag the node into any workflow and wire it between triggers and other actions. Ideal for straightforward data-retrieval or user-creation pipelines where you know exactly which operation to run at build time.
   </Card>
   <Card title="AI Tool Node" icon="robot">
     Attach the Agentova node as a **tool** to an AI agent node (such as the n8n AI Agent). The agent can then decide at runtime which operations to call based on natural-language instructions — no hard-coded operation selection required.
@@ -46,7 +46,7 @@ The Agentova node is designed to slot into your workflows in two distinct modes,
 </CardGroup>
 
 <Tip>
-  Using the node as an AI tool is especially powerful when you want a conversational agent to look up or update Agentova records on behalf of a user, without you having to anticipate every possible request in advance.
+  Using the node as an AI tool is especially powerful when you want a conversational agent to look up Agentova users or companies on behalf of a user, without you having to anticipate every possible request in advance.
 </Tip>
 
 ## Get Started
