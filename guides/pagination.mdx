@@ -1,0 +1,145 @@
+---
+title: "Paginate Large Company Lists in Agentova for n8n"
+sidebarTitle: "Pagination"
+description: "Learn how offset-based pagination works in the Agentova node and how to use the Return All toggle to retrieve complete datasets automatically."
+---
+
+When your Agentova workspace contains hundreds or thousands of companies, a single API request won't return them all. The Agentova node handles this through **offset-based pagination**: each request fetches a fixed-size page of results starting at a given offset, and subsequent requests advance that offset until no more records remain. You have two ways to interact with this system — a manual limit for lightweight queries, and a fully automated mode for complete data exports.
+
+## How offset pagination works
+
+The Agentova API accepts two query parameters on the Company **Get Many** endpoint:
+
+- **`limit`** — the maximum number of records to return in a single response (1–100).
+- **`offset`** — the zero-based index of the first record to include in the response.
+
+To walk through all records you increment `offset` by `limit` on each successive call until the API returns fewer records than the page size, signalling that you've reached the end.
+
+```http
+GET https://api.agentova.ai/v1/companies?limit=100&offset=0
+GET https://api.agentova.ai/v1/companies?limit=100&offset=100
+GET https://api.agentova.ai/v1/companies?limit=100&offset=200
+```
+
+The node abstracts this loop for you — you never have to build it manually in your workflow.
+
+---
+
+## The two pagination modes
+
+### Manual limit
+
+When **Return All** is disabled, you set an explicit **Limit** value (between 1 and 100). The node issues a single API request with that limit and returns only those records — nothing more.
+
+**Use this when:**
+- You only need a small, bounded sample (e.g., the 10 most recent companies for a dashboard card).
+- You want predictable, low-cost API usage.
+- You're testing or exploring the shape of the data before building a larger pipeline.
+
+Configure it directly in the node's parameter panel:
+
+| Field | Value |
+|---|---|
+| **Resource** | `Company` |
+| **Operation** | `Get Many` |
+| **Return All** | Disabled |
+| **Limit** | `10` (any value from 1–100) |
+
+### Auto-pagination (Return All)
+
+When **Return All** is enabled, the node ignores the Limit field and instead pages through the entire dataset automatically. It uses an internal page size of **100** and keeps issuing requests — incrementing the offset each time — until the API returns an empty page or a page smaller than 100.
+
+**Use this when:**
+- You need a complete export of all companies in your workspace.
+- You're feeding data into a downstream node (e.g., a spreadsheet or a data warehouse) that must receive every record.
+- The total number of records is unknown or changes frequently.
+
+| Field | Value |
+|---|---|
+| **Resource** | `Company` |
+| **Operation** | `Get Many` |
+| **Return All** | **Enabled** |
+
+<Warning>
+  Enabling **Return All** on a large dataset can take considerable time and will consume API rate-limit quota proportional to the total number of records divided by 100. For a workspace with 5,000 companies, the node will fire 50 sequential API requests. If you hit a 429 rate-limit error, add an n8n **Wait** node before the Agentova node or schedule the workflow to run during off-peak hours. See the [Troubleshooting guide](/guides/troubleshooting) for more detail.
+</Warning>
+
+---
+
+## What auto-pagination looks like internally
+
+The node manages the offset loop so you don't have to, but understanding the underlying request sequence helps when debugging or estimating execution time. Conceptually, the node performs the following loop:
+
+```js
+// Conceptual pseudocode — this runs inside the node, not in your workflow
+let offset = 0;
+const pageSize = 100;
+const allRecords = [];
+
+while (true) {
+  const page = await get(`/companies?limit=${pageSize}&offset=${offset}`);
+  allRecords.push(...page.records);
+
+  // Stop when the API signals there are no more records
+  if (page.records.length < pageSize) break;
+
+  offset += pageSize;
+}
+
+return allRecords;
+```
+
+Each iteration corresponds to one HTTP request to `https://api.agentova.ai/v1/companies`. The final merged array is what appears in the node's output panel.
+
+---
+
+## Inspecting paginated output
+
+After a successful **Return All** run, select the Company Get Many node and open the **Output** tab. n8n flattens all pages into a single list of items. Each item is one company object:
+
+```json
+[
+  {
+    "id": "comp_01HX...",
+    "name": "Acme Corp",
+    "createdAt": "2024-05-01T10:00:00Z"
+  },
+  {
+    "id": "comp_01HY...",
+    "name": "Globex Inc",
+    "createdAt": "2024-05-03T08:30:00Z"
+  },
+  {
+    "id": "comp_01HZ...",
+    "name": "Initech LLC",
+    "createdAt": "2024-05-07T14:15:00Z"
+  }
+]
+```
+
+The **Items** count shown at the top of the Output panel reflects the total across all pages — not just the last page retrieved.
+
+---
+
+## Choosing the right mode at a glance
+
+| Scenario | Recommended mode | Limit setting |
+|---|---|---|
+| Quick lookup / testing | Manual limit | 10–25 |
+| Known small dataset | Manual limit | Up to 100 |
+| Full export or sync | Return All | N/A (ignored) |
+| Scheduled nightly sync | Return All | N/A (ignored) |
+| Dashboard sample | Manual limit | 5–10 |
+
+---
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="First Workflow" icon="play" href="/guides/first-workflow">
+    Start from scratch with a guided walkthrough that creates a user and lists companies.
+  </Card>
+  <Card title="Troubleshooting" icon="wrench" href="/guides/troubleshooting">
+    Learn how to handle 429 rate-limit errors and other common pagination pitfalls.
+  </Card>
+</CardGroup>

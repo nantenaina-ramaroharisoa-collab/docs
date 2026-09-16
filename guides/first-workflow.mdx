@@ -1,0 +1,111 @@
+---
+title: "Build Your First Agentova Workflow in n8n"
+sidebarTitle: "First Workflow"
+description: "Follow this step-by-step tutorial to build a complete n8n workflow that creates a user and then retrieves a company list using the Agentova node."
+---
+
+Before you dive into automations, it helps to see how the pieces fit together. This tutorial walks you through building a minimal but complete n8n workflow: you'll create a new user via the Agentova API, then immediately pull back a filtered list of companies — all wired together without writing a single line of code.
+
+## Prerequisites
+
+Make sure you have the following in place before starting:
+
+- The `n8n-nodes-agentova-poc` community node is installed in your n8n instance.
+- An **Agentova Poc** credential has been created and tested successfully. If you haven't done this yet, open **Settings → Credentials → New Credential**, choose **Agentova Poc API**, paste your API key, and click **Test**.
+
+<Note>
+  The Manual Trigger used in this tutorial can be swapped for any n8n trigger node — Webhook, Schedule, or even another workflow. The Agentova nodes behave identically regardless of what starts the execution.
+</Note>
+
+## What you'll build
+
+By the end of this guide your workflow will contain three nodes in sequence:
+
+1. **Manual Trigger** — starts the run on demand
+2. **Agentova Poc (Create User)** — creates a new user called "Test User"
+3. **Agentova Poc (Get Many Companies)** — retrieves up to 10 companies from your workspace
+
+---
+
+## Step-by-step walkthrough
+
+<Steps>
+  <Step title="Create a new workflow in n8n">
+    Open your n8n instance and click **+ New Workflow** in the top-right corner. Give it a descriptive name like `Agentova – First Workflow` so it's easy to find later. n8n will save the name automatically once you start adding nodes.
+  </Step>
+
+  <Step title="Add a Manual Trigger node">
+    Every workflow needs a starting point. Click the **+** button in the canvas center, search for **Manual Trigger**, and select it. This node lets you run the workflow on demand by clicking **Test Workflow** — perfect for development and exploration.
+  </Step>
+
+  <Step title="Add an Agentova Poc node — Create User">
+    Click the **+** connector on the right side of the Manual Trigger node. Search for **Agentova Poc** and add it to the canvas.
+
+    In the node's parameter panel, configure the following fields:
+
+    | Field | Value |
+    |---|---|
+    | **Credential** | Select your Agentova Poc API credential |
+    | **Resource** | `User` |
+    | **Operation** | `Create` |
+    | **Name** | `Test User` |
+
+    Click **Execute Node** to verify that the Create call succeeds before wiring it to the next step. You should see a JSON response containing the new user's `id`, `name`, and other fields.
+  </Step>
+
+  <Step title="Add a second Agentova Poc node — Get Many Companies">
+    Click the **+** connector on the right side of the Create User node to add another **Agentova Poc** node. Configure it as follows:
+
+    | Field | Value |
+    |---|---|
+    | **Credential** | Select your Agentova Poc API credential |
+    | **Resource** | `Company` |
+    | **Operation** | `Get Many` |
+    | **Return All** | Disabled |
+    | **Limit** | `10` |
+
+    Keeping **Return All** off and the limit low keeps API usage minimal while you're testing. You can increase the limit or enable Return All once you're ready to work with real data.
+
+    <Tip>
+      You can pass data from the previous node into any field using n8n expressions. For example, if you wanted to filter companies by the ID of the user you just created, you would type `={{ $json.id }}` into the relevant field. n8n evaluates the expression at runtime and substitutes the actual value from the upstream node's output.
+    </Tip>
+  </Step>
+
+  <Step title="Execute the workflow and inspect the output">
+    Click **Test Workflow** in the top toolbar. n8n will run all three nodes in sequence and highlight each one green on success.
+
+    Select the **Get Many Companies** node and open the **Output** panel. You'll see an array of company objects, each containing fields like `id`, `name`, and any other attributes returned by the Agentova API.
+
+    ```json
+    [
+      {
+        "id": "comp_01HX...",
+        "name": "Acme Corp",
+        "createdAt": "2024-05-01T10:00:00Z"
+      },
+      {
+        "id": "comp_01HY...",
+        "name": "Globex Inc",
+        "createdAt": "2024-05-03T08:30:00Z"
+      }
+    ]
+    ```
+
+    If either node shows a red error badge, check the **Error** tab in the output panel for the HTTP status code and message, then refer to the [Troubleshooting guide](/guides/troubleshooting) for next steps.
+  </Step>
+</Steps>
+
+---
+
+## Next steps
+
+Now that your first workflow is running, here are some directions to explore:
+
+<CardGroup cols={2}>
+  <Card title="Pagination" icon="layer-group" href="/guides/pagination">
+    Learn how to retrieve thousands of company records automatically using the Return All toggle.
+  </Card>
+  <Card title="Troubleshooting" icon="wrench" href="/guides/troubleshooting">
+    Diagnose authentication errors, missing parameters, and other common issues.
+  </Card>
+</CardGroup>

@@ -1,0 +1,116 @@
+---
+title: "Install the Agentova Node in n8n"
+sidebarTitle: "Installation"
+description: "Step-by-step guide to installing the n8n-nodes-agentova-poc community node through the n8n UI or npm on self-hosted instances."
+---
+
+The Agentova node is published as an n8n community node under the package name `n8n-nodes-agentova-poc`. You can install it in two ways: directly through the n8n user interface (available on both n8n Cloud and self-hosted instances with the correct settings), or via your preferred package manager if you run n8n on your own server. Choose the method that matches your setup.
+
+<Note>
+  `n8n-nodes-agentova-poc` is currently in **alpha** (version `0.0.1-alpha`). The node is fully functional for the operations described in this documentation, but the API surface may change before a stable release. Pin the package version in production environments if you need reproducible behaviour.
+</Note>
+
+## Prerequisites
+
+Before you install, make sure you have the following:
+
+- A running n8n instance — either [n8n Cloud](https://n8n.io/cloud/) or a self-hosted deployment.
+- **n8n version compatibility:** the node targets any modern n8n release. There are no known minimum version constraints beyond n8n's own community-node support (introduced in n8n `0.187.0`).
+- For self-hosted installs: Node.js and npm (or yarn / pnpm) available in the environment where n8n runs.
+- Community node installation must be enabled. On self-hosted instances this is on by default; on n8n Cloud it depends on your plan.
+
+## Method 1: Install via the n8n UI
+
+This is the quickest path if your n8n instance has internet access. No terminal required.
+
+<Steps>
+  <Step title="Open Settings">
+    In the n8n sidebar, click **Settings** (the cog icon near the bottom-left of the screen).
+  </Step>
+  <Step title="Navigate to Community Nodes">
+    In the Settings menu, select **Community Nodes** from the left-hand navigation panel.
+  </Step>
+  <Step title="Start the installation">
+    Click the **Install** button (or **Install a community node** if no nodes are installed yet).
+  </Step>
+  <Step title="Enter the package name">
+    In the dialog that appears, type the exact package name:
+
+    ```text
+    n8n-nodes-agentova-poc
+    ```
+
+    Leave the **Verify author** checkbox in its default state, then click **Install**.
+  </Step>
+  <Step title="Wait for confirmation">
+    n8n will fetch the package from npm and display a success message. The node is now available — no restart is needed for UI-based installs on n8n Cloud.
+  </Step>
+  <Step title="Confirm the node appears in the palette">
+    Open any workflow, click **Add node** (the **+** button on the canvas), and search for **Agentova Poc**. You should see the node appear in the results.
+  </Step>
+</Steps>
+
+<Tip>
+  If the Community Nodes option is not visible in your Settings menu, your instance may have the feature disabled. Self-hosted users can enable it by setting the environment variable `N8N_COMMUNITY_PACKAGES_ENABLED=true` and restarting n8n.
+</Tip>
+
+## Method 2: Install via npm (Self-Hosted)
+
+If you manage n8n on your own infrastructure, you can install the package directly into the n8n working directory using your preferred package manager.
+
+<Steps>
+  <Step title="SSH into your n8n server">
+    Connect to the machine or container where n8n is running.
+  </Step>
+  <Step title="Navigate to your n8n directory">
+    Change to the directory where n8n is installed. For global installs this is typically the directory reported by `npm root -g`.
+  </Step>
+  <Step title="Install the package">
+    Run one of the following commands, depending on the package manager you use:
+
+    <CodeGroup>
+      ```bash npm
+      npm install n8n-nodes-agentova-poc
+      ```
+
+      ```bash yarn
+      yarn add n8n-nodes-agentova-poc
+      ```
+
+      ```bash pnpm
+      pnpm add n8n-nodes-agentova-poc
+      ```
+    </CodeGroup>
+  </Step>
+  <Step title="Restart n8n">
+    After installation, restart the n8n process so it picks up the new node:
+
+    ```bash
+    # systemd
+    sudo systemctl restart n8n
+
+    # pm2
+    pm2 restart n8n
+
+    # Docker — restart the container
+    docker restart <your-n8n-container-name>
+    ```
+  </Step>
+  <Step title="Confirm the node appears in the palette">
+    Log in to your n8n instance, open any workflow, and search for **Agentova Poc** in the node palette to confirm the install was successful.
+  </Step>
+</Steps>
+
+<Note>
+  For Docker-based deployments, the preferred approach is to add `n8n-nodes-agentova-poc` to the `N8N_COMMUNITY_PACKAGES` environment variable (comma-separated list) rather than installing manually, so the package is reinstalled automatically when the container is recreated. See the [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/installation/) for details.
+</Note>
+
+## Next Steps
+
+Once the node is installed and visible in the palette, head over to the Authentication guide to connect it to your Agentova account.
+
+<CardGroup cols={1}>
+  <Card title="Authenticate the Agentova Node" icon="key" href="./authentication">
+    Generate your API key and create your first Agentova Poc API credential in n8n.
+  </Card>
+</CardGroup>

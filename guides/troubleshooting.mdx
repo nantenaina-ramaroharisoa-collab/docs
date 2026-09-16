@@ -1,0 +1,164 @@
+---
+title: "Troubleshoot Common Agentova Node Errors in n8n"
+sidebarTitle: "Troubleshooting"
+description: "Diagnose and fix the most common issues with the Agentova Poc node: authentication failures, missing parameters, and API errors."
+---
+
+Even well-configured workflows run into problems occasionally. This page covers the errors you're most likely to encounter when using the Agentova Poc node, explains what causes them, and gives you concrete steps to resolve each one. Work through the relevant accordion section below, then re-run your workflow to confirm the fix.
+
+<Tip>
+  n8n's built-in execution log is your best first stop for any error. Open the workflow, click **Executions** in the left sidebar, and select the failed run. From there you can drill into each node's input and output, including the raw HTTP request URL, headers, and response body — invaluable for spotting exactly where things went wrong.
+</Tip>
+
+---
+
+## Common issues
+
+<AccordionGroup>
+  <Accordion title="401 Unauthorized — authentication failed">
+    **What you see:** The node returns an error with HTTP status `401` and a message such as `Unauthorized` or `Invalid API key`.
+
+    **Why it happens:** The API key stored in your credential is missing, incorrect, expired, or has been revoked on the Agentova side.
+
+    **How to fix it:**
+
+    1. Open **Settings → Credentials** in n8n and locate your **Agentova Poc API** credential.
+    2. Click **Edit** and confirm the API key field is not empty.
+    3. Click **Test** — if the test fails, the key itself is the problem.
+    4. Log in to your Agentova account, navigate to **API Keys**, and verify the key is still active. If it has been revoked or rotated, generate a new one.
+    5. Paste the new key into the n8n credential and click **Save**, then **Test** again.
+    6. Re-execute your workflow.
+
+    If the test passes but the workflow still returns 401, check that the correct credential is selected inside the Agentova Poc node (the **Credential** dropdown at the top of the parameter panel).
+  </Accordion>
+
+  <Accordion title="Node not found in the node palette">
+    **What you see:** Searching for "Agentova" or "Agentova Poc" in the node search panel returns no results.
+
+    **Why it happens:** The `n8n-nodes-agentova-poc` community package is not installed in your n8n instance, or it was installed but n8n hasn't been restarted since installation.
+
+    **How to fix it:**
+
+    1. Open **Settings → Community Nodes** in n8n.
+    2. Check whether `n8n-nodes-agentova-poc` appears in the installed packages list.
+    3. If it's missing, click **Install**, enter `n8n-nodes-agentova-poc`, and confirm.
+    4. **Restart your n8n instance.** This step is required — n8n loads community nodes at startup, so a restart is necessary for newly installed packages to appear in the palette.
+    5. After restarting, open a workflow canvas and search for `Agentova Poc` again.
+
+    If you're running n8n in Docker, restart the container. If you're using n8n Cloud, contact your workspace admin to verify community node permissions are enabled.
+  </Accordion>
+
+  <Accordion title='"User ID is required" error on Get or Update operations'>
+    **What you see:** The node throws a validation error: `User ID is required` (or similar), preventing execution.
+
+    **Why it happens:** The **User ID** field on the User **Get** (or **Update**) operation is empty. This field is mandatory — the API cannot fetch a specific user without knowing which one to look up.
+
+    **How to fix it:**
+
+    - If you know the user ID in advance, type it directly into the **User ID** field (e.g., `usr_01HX...`).
+    - If the ID is coming from a previous node (for example, the output of a **Create User** step), use an n8n expression:
+
+    ```text
+    ={{ $json.id }}
+    ```
+
+    Click the **expression toggle** (the `{}` icon) next to the User ID field, then type or paste the expression above. n8n will resolve it at runtime using the output of the connected upstream node.
+
+    If you're unsure what field name to reference, check the output of the upstream node in the **Output** panel and look for the `id` key.
+  </Accordion>
+
+  <Accordion title='"Name is required" error on Create User'>
+    **What you see:** The node throws a validation error: `Name is required` when you attempt to create a user.
+
+    **Why it happens:** The **Name** field on the User **Create** operation is blank. This is a required field — the Agentova API will reject the request without it.
+
+    **How to fix it:**
+
+    1. Open the Agentova Poc node configured for **Resource: User / Operation: Create**.
+    2. Locate the **Name** field and enter a value (e.g., `Jane Smith`).
+    3. If the name should come from a previous node or a form submission, use an expression:
+
+    ```text
+    ={{ $json.fullName }}
+    ```
+
+    Replace `fullName` with whatever key holds the name in your upstream data. Re-execute the node once the field is populated.
+  </Accordion>
+
+  <Accordion title="Get Many returns empty results">
+    **What you see:** The node executes successfully (green badge, no error) but the output contains zero items.
+
+    **Why it happens:** There are several possible causes:
+
+    - Your workspace genuinely has no users or companies yet.
+    - Your API key is scoped to a different workspace than the one you're querying.
+    - A filter or limit is unintentionally excluding all records.
+
+    **How to fix it:**
+
+    1. Log in to the Agentova web app and confirm that records (users or companies) exist in your workspace.
+    2. Check that the API key you're using belongs to the correct workspace. If you have access to multiple workspaces, each has its own set of API keys.
+    3. If you set a **Limit** of `0` by mistake, correct it to any value between 1 and 100.
+    4. Try enabling **Return All** temporarily — if records exist, this will retrieve them regardless of offset or limit misconfiguration.
+    5. If the issue persists, use the execution log to inspect the raw HTTP response and confirm the API is returning an empty array rather than an error.
+  </Accordion>
+
+  <Accordion title="Rate limit error (HTTP 429) — too many requests">
+    **What you see:** The node returns HTTP status `429` with a message like `Too Many Requests` or `Rate limit exceeded`. This is especially common when **Return All** is enabled on large datasets.
+
+    **Why it happens:** The Agentova API enforces request rate limits. When **Return All** triggers dozens of sequential requests in rapid succession, it can exhaust the allowed request quota within a short window.
+
+    **How to fix it:**
+
+    - **Add a Wait node:** Insert an n8n **Wait** node set to 1–2 seconds between loops if you're manually chaining multiple Agentova nodes.
+    - **Schedule off-peak runs:** If the workflow is a data sync, use a **Schedule Trigger** to run it during low-traffic hours (e.g., 2:00 AM) rather than during business hours.
+    - **Reduce frequency:** If the workflow runs very frequently (e.g., every minute), increase the interval to reduce cumulative API calls.
+    - **Use Manual Limit where possible:** If you don't need every record, switch off **Return All** and set a modest **Limit** — this caps the request count at one per execution.
+
+    After applying a fix, wait a few minutes for the rate-limit window to reset before re-running the workflow.
+  </Accordion>
+
+  <Accordion title="Credential test fails — API unreachable or key lacks access">
+    **What you see:** When you click **Test** on the Agentova Poc API credential, n8n reports that the test failed, even though you believe the API key is correct.
+
+    **Why it happens:** The credential test makes a request to the `/automations` endpoint on `https://api.agentova.ai/v1`. The test can fail because:
+
+    - The Agentova API is temporarily unreachable (network or service outage).
+    - Your API key does not have permission to access the `/automations` endpoint.
+    - A firewall or proxy on your network is blocking outbound requests to `api.agentova.ai`.
+
+    **How to fix it:**
+
+    1. **Check API status:** Visit the Agentova status page or contact Agentova support to confirm there are no ongoing incidents.
+    2. **Verify key permissions:** In the Agentova dashboard, open your API key settings and ensure it has read access to automations (or is a full-access key).
+    3. **Check network connectivity:** If you're running n8n on a self-hosted server, confirm the server can reach `https://api.agentova.ai` from the command line:
+
+    ```bash
+    curl -I https://api.agentova.ai/v1/automations \
+      -H "Authorization: Bearer YOUR_API_KEY"
+    ```
+
+    A `200` or `401` response confirms network connectivity is fine. A connection error or timeout points to a firewall or DNS issue.
+
+    4. If you're on a corporate network, ask your IT team whether outbound HTTPS to `api.agentova.ai` is permitted.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Still stuck?
+
+If none of the solutions above resolve your issue, these resources can help:
+
+<Note>
+  For general n8n questions — workflow structure, expressions, built-in nodes, and self-hosting — refer to the official n8n documentation at [https://docs.n8n.io](https://docs.n8n.io). The Agentova-specific behaviour described in this guide is separate from the core n8n platform.
+</Note>
+
+<CardGroup cols={2}>
+  <Card title="First Workflow" icon="play" href="/guides/first-workflow">
+    Go back to basics with a guided end-to-end walkthrough.
+  </Card>
+  <Card title="Pagination" icon="layer-group" href="/guides/pagination">
+    Understand Return All and avoid rate-limit pitfalls on large datasets.
+  </Card>
+</CardGroup>

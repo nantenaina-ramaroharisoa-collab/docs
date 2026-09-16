@@ -1,0 +1,116 @@
+---
+title: "User Resource: Get, List, and Create Users in Agentova"
+sidebarTitle: "Users"
+description: "Use the Agentova Poc node to list all users, retrieve a user by ID, or create a new user. Full parameter reference and examples."
+---
+
+The **User** resource gives you full read and write access to the people in your Agentova account. You can pull a flat list of every user, look up a specific individual by their unique ID, or provision a brand-new user record — all from within an n8n workflow. Select `User` from the **Resource** dropdown in the node, then choose one of the three operations below.
+
+---
+
+## Get Many
+
+The **Get Many** operation sends a `GET` request to `/users` and returns every user in your Agentova account as an array of user objects. No additional parameters are required — simply select the operation and execute the node.
+
+This is the right choice when you need to process, filter, or forward your entire user list to a downstream node.
+
+### Example response shape
+
+```json
+[
+  {
+    "id": "usr_01hx9bk2e3fg4h5j6k7l8m9n0",
+    "name": "Alice Nguyen",
+    "createdAt": "2024-03-15T10:22:00Z"
+  },
+  {
+    "id": "usr_02pq3rs4t5uv6w7x8y9z0a1b2",
+    "name": "Ben Carter",
+    "createdAt": "2024-04-01T08:05:34Z"
+  }
+]
+```
+
+Each item in the output array becomes a separate n8n item, so subsequent nodes receive one user per execution branch.
+
+<Tip>
+  Chain **Get Many** into a **Split In Batches** or **Loop Over Items** node to process each user individually — for example, to send a personalised email, update an external CRM record, or trigger a sub-workflow per user. Reference each user's fields downstream with expressions like `={{ $json.id }}` or `={{ $json.name }}`.
+</Tip>
+
+---
+
+## Get
+
+The **Get** operation sends a `GET` request to `/users/{userId}` and returns a single user object matching the ID you provide. Use this when you already know the identifier of the user you need — for example, when an earlier node or a webhook payload has supplied it.
+
+### Parameters
+
+<ParamField path="userId" type="string" required>
+  The unique identifier of the user to retrieve. You can hardcode a value or use an n8n expression to pass it dynamically from a previous node.
+</ParamField>
+
+### Using an expression
+
+When the user ID comes from an upstream node — such as a webhook trigger or a **Get Many** result — reference it with an expression instead of a static value:
+
+```text
+={{ $json.userId }}
+```
+
+Or, if the field is named `id` in the upstream item:
+
+```text
+={{ $json.id }}
+```
+
+### Example response shape
+
+```json
+{
+  "id": "usr_01hx9bk2e3fg4h5j6k7l8m9n0",
+  "name": "Alice Nguyen",
+  "createdAt": "2024-03-15T10:22:00Z"
+}
+```
+
+---
+
+## Create
+
+The **Create** operation sends a `POST` request to `/users` with a JSON body containing the new user's name. On success, Agentova returns the newly created user object, including the system-assigned ID and creation timestamp.
+
+### Parameters
+
+<ParamField body="name" type="string" required>
+  The display name for the new user. This value is sent as `name` in the request body. You can hardcode a name or populate it dynamically from a form submission, a spreadsheet row, or any other upstream data source.
+</ParamField>
+
+### Using an expression
+
+If the name comes from a previous node — for example, a **Form Trigger** or a **Google Sheets** node — pass it with an expression:
+
+```text
+={{ $json.name }}
+```
+
+### Example request body
+
+```json
+{
+  "name": "Clara Osei"
+}
+```
+
+### Example response shape
+
+```json
+{
+  "id": "usr_09cd1ef2g3hi4j5k6l7m8n9o0",
+  "name": "Clara Osei",
+  "createdAt": "2025-06-10T14:33:21Z"
+}
+```
+
+<Note>
+  After a successful **Create**, the returned item contains the new user's `id`. You can feed this directly into a subsequent **Get** operation using `={{ $json.id }}` to confirm the record or pass it to another system.
+</Note>

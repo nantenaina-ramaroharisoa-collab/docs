@@ -1,0 +1,79 @@
+---
+title: "Authenticate the Agentova Node with Your API Key"
+sidebarTitle: "Authentication"
+description: "Generate your Agentova API key, create a credential in n8n, and connect the Agentova Poc node to your account securely."
+---
+
+Every request the Agentova node makes to the Agentova API is authenticated with a personal API key. You generate the key once inside your Agentova account, store it as a named credential in n8n, and then select that credential whenever you add the Agentova node to a workflow. Your key is encrypted at rest by n8n and never exposed in plain text inside your workflow JSON.
+
+## How Authentication Works
+
+The node attaches your API key to every outbound request as an HTTP `Authorization` header using the Bearer token scheme:
+
+```http
+Authorization: Bearer <your-api-key>
+```
+
+All requests are sent over HTTPS to the base URL `https://api.agentova.ai/v1`. You do not need to configure the base URL yourself — it is baked into the node.
+
+<Warning>
+  Treat your API key like a password. Anyone who obtains your key can make authenticated requests to the Agentova API on your behalf. Never commit it to version control, share it in chat, or embed it directly in a workflow expression. Always store it exclusively in an n8n credential.
+</Warning>
+
+## Step-by-Step Setup
+
+<Steps>
+  <Step title="Retrieve your Agentova API key">
+    Log in to your [Agentova account](https://agentova.ai) and navigate to your account or developer settings. Locate the **API Keys** section and generate a new key (or copy an existing one). Keep this browser tab open — you will paste the key into n8n in the next step.
+  </Step>
+  <Step title="Open the n8n Credentials section">
+    In n8n, click **Credentials** in the left-hand sidebar, then click **Add credential** in the top-right corner.
+  </Step>
+  <Step title="Search for the Agentova credential type">
+    In the credential type search box, type **Agentova** and select **Agentova Poc API** from the results.
+  </Step>
+  <Step title="Paste your API key">
+    In the **API Key** field, paste the key you copied from your Agentova account. The field is masked so the key is not displayed in plain text after you save.
+  </Step>
+  <Step title="Save and test the credential">
+    Click **Save** (or **Save & Test** if the button is present). n8n will immediately send a test request to the Agentova API to confirm the key is valid. A green **Connection tested successfully** banner confirms everything is working.
+  </Step>
+  <Step title="Select the credential in your workflow">
+    Open any workflow that contains an Agentova Poc node, click the node, and choose your newly created credential from the **Credential for Agentova Poc API** dropdown. The node is now authorised and ready to use.
+  </Step>
+</Steps>
+
+<Note>
+  When you click **Save & Test**, n8n verifies the credential by making a real API call: `GET https://api.agentova.ai/v1/automations?limit=1`. A successful `200 OK` response confirms your key is valid and has the correct permissions. If the endpoint returns data, that data is discarded — it is used only to validate the connection.
+</Note>
+
+## Troubleshooting
+
+If the credential test fails or your node returns errors at runtime, use the table below to diagnose the issue.
+
+| Symptom | Likely Cause | Resolution |
+|---------|-------------|------------|
+| **401 Unauthorized** during credential test | API key is invalid, expired, or copied incorrectly | Double-check the key in your Agentova account and re-paste it into n8n. |
+| **401 Unauthorized** at runtime (key previously worked) | Key may have been revoked or rotated | Regenerate the key in Agentova and update the n8n credential. |
+| **403 Forbidden** | Key does not have the required permissions | Ensure the key has read/write access to Users and Companies in Agentova. |
+| **Credential test button is greyed out** | n8n version does not support credential testing for this node | Save the credential and test it by running a simple **Get Many** operation in a workflow instead. |
+
+### Regenerating Your API Key
+
+If your key is compromised or you need to rotate it for security reasons:
+
+<Steps>
+  <Step title="Revoke the old key">
+    In your Agentova account settings, find the existing key and delete or revoke it immediately.
+  </Step>
+  <Step title="Generate a new key">
+    Create a new API key in the same section.
+  </Step>
+  <Step title="Update the n8n credential">
+    In n8n, open **Credentials**, find your **Agentova Poc API** credential, click **Edit**, replace the value in the **API Key** field with the new key, and click **Save**.
+  </Step>
+</Steps>
+
+<Tip>
+  Updating a credential in n8n automatically applies to every workflow that references it. You do not need to update each workflow individually after rotating your key.
+</Tip>

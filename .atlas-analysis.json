@@ -1,0 +1,58 @@
+{
+  "projectType": "sdk-library",
+  "projectName": "Agentova for n8n",
+  "projectDescription": "A community n8n node that connects your workflows to the Agentova API, enabling you to manage users and companies directly inside n8n automations.",
+  "theme": "luma",
+  "primaryColor": "#de4f74",
+  "lightColor": "#dd839b",
+  "darkColor": "#e4b4c0",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "authentication"
+            ]
+          },
+          {
+            "group": "Using the Node",
+            "pages": [
+              "node-overview",
+              "resources/users",
+              "resources/companies"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/first-workflow",
+              "guides/pagination",
+              "guides/troubleshooting"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Drag-and-drop n8n node for Agentova API integration",
+    "User resource: Get Many, Get by ID, Create",
+    "Company resource: Get Many with automatic pagination",
+    "Bearer token authentication via API key",
+    "Usable as an AI tool node inside n8n agent workflows",
+    "Automatic offset-based pagination for large result sets"
+  ],
+  "publicApiSurface": [
+    "GET /users — retrieve all users",
+    "GET /users/:id — retrieve a single user by ID",
+    "POST /users — create a new user",
+    "GET /companies — retrieve companies (supports limit & pagination)",
+    "Credential: agentovaPocApi (API Key / Bearer token)",
+    "Node: AgentovaPoc (displayName: Agentova Poc)"
+  ]
+}

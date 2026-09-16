@@ -1,0 +1,79 @@
+---
+title: "Agentova Poc Node: Resources, Operations & Settings"
+sidebarTitle: "Node Overview"
+description: "A complete reference for the Agentova Poc n8n node — all resources, operations, parameters, and how to use it as an AI agent tool."
+---
+
+The **Agentova Poc** node connects your n8n workflows to the Agentova API, letting you manage users and companies without writing any code. You'll find it in the n8n node panel under the **Transform** group — search for `Agentova Poc` to add it to any workflow canvas.
+
+Once the node is placed, select your **Agentova Poc API** credential, then choose a **Resource** and an **Operation** to define what the node does. The node's subtitle updates dynamically in the canvas to reflect your current selection, so you can tell at a glance what each node does inside a complex workflow.
+
+---
+
+## Resources and operations
+
+The node exposes two resources — **User** and **Company** — with a total of four operations across them.
+
+| Resource | Operation | Method | Endpoint | Description |
+|----------|-----------|--------|----------|-------------|
+| User | Get Many | `GET` | `/users` | Retrieve all users in your Agentova account |
+| User | Get | `GET` | `/users/{userId}` | Retrieve a single user by their ID |
+| User | Create | `POST` | `/users` | Create a new user with a name |
+| Company | Get Many | `GET` | `/companies` | List companies, with optional pagination control |
+
+### How the subtitle works
+
+Every Agentova Poc node displays a subtitle directly beneath its name on the n8n canvas. The subtitle follows the pattern:
+
+```
+<operation>: <resource>
+```
+
+For example, selecting **Get** under the **User** resource renders as `get: User`. This makes it easy to differentiate multiple Agentova nodes in the same workflow at a glance — no need to open each node to understand its purpose.
+
+---
+
+## Using the node as an AI tool
+
+The Agentova Poc node supports `usableAsTool: true`, which means you can attach it directly to an **AI Agent** node in n8n's LangChain-based agent workflows.
+
+When added as a tool, the AI agent can autonomously decide when to call the node — for example, looking up a user by ID mid-conversation or creating a user record in response to a prompt — without any manual trigger or explicit branching logic in your workflow.
+
+<Note>
+  To use the node as an AI tool, open an **AI Agent** node, navigate to the **Tools** section, and add the Agentova Poc node from the tool picker. The agent will receive a description of each operation and select the appropriate one at runtime.
+</Note>
+
+### Steps to attach the node to an AI agent
+
+<Steps>
+  <Step title="Add an AI Agent node">
+    Drag an **AI Agent** node onto your canvas and configure your language model and memory as needed.
+  </Step>
+  <Step title="Open the Tools section">
+    Inside the AI Agent node, scroll to the **Tools** panel and click **Add Tool**.
+  </Step>
+  <Step title="Select Agentova Poc">
+    Search for `Agentova Poc` in the tool picker and select it. Choose the resource and operation you want the agent to be able to call.
+  </Step>
+  <Step title="Provide credentials">
+    Assign your **Agentova Poc API** credential to the tool node. The agent will use it automatically when invoking the operation.
+  </Step>
+  <Step title="Run your agent">
+    Test your agent with a prompt that requires user or company data. The agent will call the Agentova node when it determines that data is needed.
+  </Step>
+</Steps>
+
+---
+
+## Explore resources
+
+Dive into the full parameter reference and worked examples for each resource.
+
+<CardGroup cols={2}>
+  <Card title="Users" icon="user" href="/resources/users">
+    List all users, fetch a single user by ID, or create a new user. Includes parameter details and expression examples.
+  </Card>
+  <Card title="Companies" icon="building" href="/resources/companies">
+    Retrieve companies with configurable limits and automatic offset pagination for large datasets.
+  </Card>
+</CardGroup>
